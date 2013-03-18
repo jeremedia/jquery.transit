@@ -5,6 +5,9 @@
  *
  * http://ricostacruz.com/jquery.transit
  * http://github.com/rstacruz/jquery.transit
+ 
+ * added support for the z axis
+ 
  */
 
 (function($) {
@@ -165,15 +168,20 @@
   // Allows you to rotate, scale and translate.
   registerCssHook('scale');
   registerCssHook('translate');
+  registerCssHook('translate3d');
+  
+  registerCssHook('translateZ');
   registerCssHook('rotate');
   registerCssHook('rotateX');
   registerCssHook('rotateY');
+  registerCssHook('rotateZ');
   registerCssHook('rotate3d');
   registerCssHook('perspective');
   registerCssHook('skewX');
   registerCssHook('skewY');
   registerCssHook('x', true);
   registerCssHook('y', true);
+  registerCssHook('z', true);
 
   // ## Transform class
   // This is the main class of a transformation property that powers
@@ -262,6 +270,10 @@
       rotateY: function(theta) {
         this.rotateY = unit(theta, 'deg');
       },
+      
+      rotateZ: function(theta) {
+        this.rotateZ = unit(theta, 'deg');
+      },
 
       // ### scale
       //
@@ -294,26 +306,33 @@
       //     .css({ y: 10 })      //=> "translate(4px, 10px)"
       //
       x: function(x) {
-        this.set('translate', x, null);
+        this.set('translate', x, null, null);
       },
 
       y: function(y) {
-        this.set('translate', null, y);
+        this.set('translate', null, y, null);
       },
+      
+      z: function(z) {
+         this.set('translate', null, null, z);
+       },
+      
 
       // ### translate
       // Notice how this keeps the other value.
       //
       //     .css({ translate: '2, 5' })    //=> "translate(2px, 5px)"
       //
-      translate: function(x, y) {
+      translate: function(x, y, z) {
         if (this._translateX === undefined) { this._translateX = 0; }
         if (this._translateY === undefined) { this._translateY = 0; }
-
+        if (this._translateZ === undefined) { this._translateZ = 0; }
+        
         if (x !== null) { this._translateX = unit(x, 'px'); }
         if (y !== null) { this._translateY = unit(y, 'px'); }
+        if (z !== null) { this._translateZ = unit(z, 'px'); }
 
-        this.translate = this._translateX + "," + this._translateY;
+        this.translate = this._translateX + "," + this._translateY + "," + this._translateZ;
       }
     },
 
@@ -325,7 +344,11 @@
       y: function() {
         return this._translateY || 0;
       },
-
+      
+      z: function() {
+        return this._translateZ || 0;
+      },
+      
       scale: function() {
         var s = (this.scale || "1,1").split(',');
         if (s[0]) { s[0] = parseFloat(s[0]); }
@@ -375,7 +398,7 @@
             if (use3d && (i === 'scale')) {
               re.push(i + "3d(" + this[i] + ",1)");
             } else if (use3d && (i === 'translate')) {
-              re.push(i + "3d(" + this[i] + ",0)");
+              re.push(i + "3d(" + this[i] + ")");
             } else {
               re.push(i + "(" + this[i] + ")");
             }
